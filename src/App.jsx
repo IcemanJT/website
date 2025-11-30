@@ -1,166 +1,108 @@
 // src/App.jsx
 
-import { useEffect, useState } from "react";
-import { checkHealth, listTools, runTool } from "./apiClient";
 import "./index.css"; // global styles
 
 function App() {
-  const [health, setHealth] = useState(null);
-  const [healthLoading, setHealthLoading] = useState(false);
-
-  const [tools, setTools] = useState([]);
-  const [toolsLoading, setToolsLoading] = useState(false);
-
-  const [runResult, setRunResult] = useState(null);
-  const [runLoading, setRunLoading] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-
-  // Load health + tools when the app mounts
-  useEffect(() => {
-    handleCheckHealth();
-    handleLoadTools();
-  }, []);
-
-  async function handleCheckHealth() {
-    setHealthLoading(true);
-    try {
-      const data = await checkHealth();
-      setHealth(data);
-    } catch (err) {
-      console.error(err);
-      setHealth({ status: "error", error: "Failed to check health" });
-    } finally {
-      setHealthLoading(false);
-    }
-  }
-
-  async function handleLoadTools() {
-    setToolsLoading(true);
-    try {
-      const data = await listTools();
-      setTools(data);
-    } catch (err) {
-      console.error(err);
-      setTools([]);
-    } finally {
-      setToolsLoading(false);
-    }
-  }
-
-  async function handleRunTool(toolId) {
-    if (!toolId) return;
-
-    setRunLoading(true);
-    setRunResult(null);
-    try {
-      const payload = { input: inputValue || null };
-      const result = await runTool(toolId, payload);
-      setRunResult(result);
-    } catch (err) {
-      console.error(err);
-      setRunResult({ error: "Failed to run tool" });
-    } finally {
-      setRunLoading(false);
-    }
-  }
-
   return (
     <main className="page">
       <header className="page-header">
         <div>
-          <h1 className="page-title">My Website</h1>
+          <h1 className="page-title">Github Website Sandbox</h1>
           <p className="page-subtitle">
-            Frontend ready. Backend wiring coming soon.
+            Minimal frontpage for this repo. Backend endpoints coming soon.
           </p>
+        </div>
+
+        <div className="page-header-actions">
+          <a
+            href="https://github.com/IcemanJT/website"
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-outline"
+          >
+            View repository
+          </a>
         </div>
       </header>
 
       <section className="grid">
-        {/* Status card */}
+        {/* Intro / project description */}
         <article className="card">
-          <h2 className="card-title">Backend status</h2>
+          <h2 className="card-title">Welcome</h2>
           <p className="card-text">
-            These values are coming from mock functions that will later call
-            your FastAPI backend.
+            This is a clean landing page for the project. The cards below are
+            placeholders for your future FastAPI (or any backend) endpoints.
           </p>
 
-          <button
-            className="btn"
-            onClick={handleCheckHealth}
-            disabled={healthLoading}
-          >
-            {healthLoading ? "Checking..." : "Re-check status"}
-          </button>
-
-          <pre className="card-pre">
-            {health
-              ? JSON.stringify(health, null, 2)
-              : "No status yet — checking on load..."}
-          </pre>
-        </article>
-
-        {/* Tools card */}
-        <article className="card">
-          <h2 className="card-title">Available tools</h2>
-          <p className="card-text">
-            This list comes from a stubbed <code>listTools()</code> function.
-          </p>
-
-          <button
-            className="btn btn-outline"
-            onClick={handleLoadTools}
-            disabled={toolsLoading}
-          >
-            {toolsLoading ? "Loading..." : "Reload tools"}
-          </button>
-
-          <ul className="tools-list">
-            {tools.length === 0 && !toolsLoading && (
-              <li className="tools-empty">No tools yet.</li>
-            )}
-            {tools.map((tool) => (
-              <li key={tool.id} className="tool-item">
-                <div className="tool-header">
-                  <span className="tool-name">{tool.name}</span>
-                  <span className="tool-status">{tool.status}</span>
-                </div>
-                <p className="tool-description">{tool.description}</p>
-                <button
-                  className="btn btn-small"
-                  onClick={() => handleRunTool(tool.id)}
-                  disabled={runLoading}
-                >
-                  {runLoading ? "Running..." : "Run tool"}
-                </button>
-              </li>
-            ))}
+          <ul className="card-list">
+            <li>✅ Simple layout, no mock logic</li>
+            <li>🧱 Ready spots for status, tools & API testing</li>
+            <li>🚀 Can be turned into a full API playground later</li>
           </ul>
+
+          <p className="card-text">
+            As you expose endpoints, you can wire them directly into these
+            sections without changing the overall layout.
+          </p>
         </article>
 
-        {/* Run tool card */}
-        <article className="card card-full">
-          <h2 className="card-title">Tool runner</h2>
+        {/* Backend status placeholder */}
+        <article className="card">
+          <h2 className="card-title">Backend status (placeholder)</h2>
           <p className="card-text">
-            Enter some input and click “Run tool” on any tool above. Right now
-            it uses mock data, later it will call your real API.
+            This card will eventually call your{" "}
+            <code>/api/health</code> or similar endpoint to display the current
+            status of the backend.
           </p>
 
-          <label className="field">
-            <span className="field-label">Input</span>
-            <input
-              className="field-input"
-              type="text"
-              placeholder="Type something to send to the tool..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-          </label>
+          <button className="btn" disabled>
+            Check status (coming soon)
+          </button>
 
           <pre className="card-pre">
-            {runResult
-              ? JSON.stringify(runResult, null, 2)
-              : "Tool result will appear here."}
+{`// Example future response:
+{
+  "status": "ok",
+  "version": "0.1.0"
+}`}
           </pre>
+        </article>
+
+        {/* Tools / API showcase placeholder */}
+        <article className="card card-full">
+          <h2 className="card-title">API playground (placeholder)</h2>
+          <p className="card-text">
+            This section is reserved for a simple API tester or tools list. For
+            now, it only documents what will be here later.
+          </p>
+
+          <div className="card-text">
+            <p>Planned ideas:</p>
+            <ul className="card-list">
+              <li>
+                🔧 <strong>Tools list</strong> from <code>/api/tools</code>
+              </li>
+              <li>
+                ▶️ <strong>Run tool</strong> via <code>/api/tools/run</code>
+              </li>
+              <li>
+                📜 Show raw JSON responses for quick debugging
+              </li>
+            </ul>
+          </div>
+
+          <div className="placeholder-box">
+            <p className="placeholder-title">API tester UI (future)</p>
+            <p className="placeholder-text">
+              When the backend is ready, this box can turn into:
+            </p>
+            <ul className="placeholder-list">
+              <li>Method selector (GET / POST / ...)</li>
+              <li>Endpoint input (e.g. /api/health)</li>
+              <li>Request body editor (JSON)</li>
+              <li>Pretty-printed response output</li>
+            </ul>
+          </div>
         </article>
       </section>
     </main>
