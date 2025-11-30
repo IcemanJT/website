@@ -31,18 +31,16 @@ function App() {
           <h2 className="card-title">Welcome</h2>
           <p className="card-text">
             This is a clean landing page for the project. The cards below are
-            placeholders for your future FastAPI (or any backend) endpoints.
+            placeholders forn[ future FastAPI (or any backend) endpoints.
           </p>
 
           <ul className="card-list">
-            <li>✅ Simple layout, no mock logic</li>
-            <li>🧱 Ready spots for status, tools & API testing</li>
-            <li>🚀 Can be turned into a full API playground later</li>
+            <li>Simple layout, no mock logic</li>
+            <li>Ready spots for status, tools & API testing</li>
+            <li>Can be turned into a full API playground later</li>
           </ul>
 
           <p className="card-text">
-            As you expose endpoints, you can wire them directly into these
-            sections without changing the overall layout.
           </p>
         </article>
 
@@ -50,8 +48,7 @@ function App() {
         <article className="card">
           <h2 className="card-title">Backend status (placeholder)</h2>
           <p className="card-text">
-            This card will eventually call your{" "}
-            <code>/api/health</code> or similar endpoint to display the current
+            This card will eventually call endpoint to display the current
             status of the backend.
           </p>
 
@@ -80,13 +77,13 @@ function App() {
             <p>Planned ideas:</p>
             <ul className="card-list">
               <li>
-                🔧 <strong>Tools list</strong> from <code>/api/tools</code>
+                <strong>Tools list</strong>
               </li>
               <li>
-                ▶️ <strong>Run tool</strong> via <code>/api/tools/run</code>
+                <strong>Run tool</strong>
               </li>
               <li>
-                📜 Show raw JSON responses for quick debugging
+                Show raw JSON responses for quick debugging
               </li>
             </ul>
           </div>
@@ -98,7 +95,7 @@ function App() {
             </p>
             <ul className="placeholder-list">
               <li>Method selector (GET / POST / ...)</li>
-              <li>Endpoint input (e.g. /api/health)</li>
+              <li>Endpoint input</li>
               <li>Request body editor (JSON)</li>
               <li>Pretty-printed response output</li>
             </ul>
