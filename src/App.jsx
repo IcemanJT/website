@@ -1,108 +1,147 @@
 // src/App.jsx
 
-import "./index.css"; // global styles
+import { useState } from "react";
+import "./index.css";
+
+const PROJECTS = [
+  {
+    id: "backend",
+    name: "Backend APIs",
+    tagline: "Endpoints, health checks & tools",
+    description:
+      "This view will focus on the backend API surface: health checks, tools, and any other exposed routes.",
+    planned: [
+      "Call /health and show live status",
+      "List available tools/actions",
+      "Visualize response time and basic metrics",
+    ],
+  },
+  {
+    id: "playground",
+    name: "API Playground",
+    tagline: "Interactive request/response tester",
+    description:
+      "A lightweight Postman-style area for sending test requests to your backend directly from this page.",
+    planned: [
+      "Method selector (GET / POST / ...)",
+      "Endpoint input (e.g. /api/health)",
+      "JSON body editor with validation",
+      "Pretty-printed JSON response viewer",
+    ],
+  },
+  {
+    id: "docs",
+    name: "Project docs",
+    tagline: "High-level overview & links",
+    description:
+      "Summary of what this repo does, how the backend is structured, and where to find docs and examples.",
+    planned: [
+      "Link to README and API docs",
+      "Architecture sketch / description",
+      "Setup instructions & environment info",
+    ],
+  },
+];
 
 function App() {
-  return (
-    <main className="page">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Github Website Sandbox</h1>
-          <p className="page-subtitle">
-            Minimal frontpage for this repo. Backend endpoints coming soon.
-          </p>
-        </div>
+  const [selectedProjectId, setSelectedProjectId] = useState(PROJECTS[0].id);
+  const selectedProject =
+    PROJECTS.find((p) => p.id === selectedProjectId) ?? PROJECTS[0];
 
-        <div className="page-header-actions">
+  return (
+    <div className="app-root">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <header className="sidebar-header">
+          <div>
+            <h1 className="sidebar-title">Github Website Sandbox</h1>
+            <p className="sidebar-subtitle"></p>
+          </div>
+
           <a
             href="https://github.com/IcemanJT/website"
             target="_blank"
             rel="noreferrer"
-            className="btn btn-outline"
+            className="sidebar-link"
           >
             View repository
           </a>
-        </div>
-      </header>
+        </header>
 
-      <section className="grid">
-        {/* Intro / project description */}
-        <article className="card">
-          <h2 className="card-title">Welcome</h2>
-          <p className="card-text">
-            This is a clean landing page for the project. The cards below are
-            placeholders forn[ future FastAPI (or any backend) endpoints.
-          </p>
+        <section className="sidebar-section">
+          <h2 className="sidebar-section-title">Welcome</h2>
 
-          <ul className="card-list">
-            <li>Simple layout, no mock logic</li>
-            <li>Ready spots for status, tools & API testing</li>
-            <li>Can be turned into a full API playground later</li>
+          <h3 className="sidebar-section-subtitle">What you get now</h3>
+          <ul className="sidebar-list">
+            <li>Clean UI, no fake network calls</li>
+            <li>Clear placeholders for future endpoints</li>
+            <li>Simple structure that is easy to extend</li>
           </ul>
 
-          <p className="card-text">
-          </p>
-        </article>
+          <h3 className="sidebar-section-subtitle">What&apos;s next</h3>
+          <ul className="sidebar-list">
+            <li>Turn this into a public API playground</li>
+          </ul>
+        </section>
 
-        {/* Backend status placeholder */}
-        <article className="card">
-          <h2 className="card-title">Backend status (placeholder)</h2>
-          <p className="card-text">
-            This card will eventually call endpoint to display the current
-            status of the backend.
-          </p>
-
-          <button className="btn" disabled>
-            Check status (coming soon)
-          </button>
-
-          <pre className="card-pre">
-{`// Example future response:
-{
-  "status": "ok",
-  "version": "0.1.0"
-}`}
-          </pre>
-        </article>
-
-        {/* Tools / API showcase placeholder */}
-        <article className="card card-full">
-          <h2 className="card-title">API playground (placeholder)</h2>
-          <p className="card-text">
-            This section is reserved for a simple API tester or tools list. For
-            now, it only documents what will be here later.
+        <section className="sidebar-section">
+          <h2 className="sidebar-section-title">Choose what to display</h2>
+          <p className="sidebar-section-text">
+            Pick a project area below. The main panel on the right will update
+            based on your selection. For now this is all placeholder content.
           </p>
 
-          <div className="card-text">
-            <p>Planned ideas:</p>
-            <ul className="card-list">
-              <li>
-                <strong>Tools list</strong>
+          <ul className="project-list">
+            {PROJECTS.map((project) => (
+              <li key={project.id}>
+                <button
+                  type="button"
+                  className={
+                    "project-item" +
+                    (project.id === selectedProjectId
+                      ? " project-item-active"
+                      : "")
+                  }
+                  onClick={() => setSelectedProjectId(project.id)}
+                >
+                  <span className="project-name">{project.name}</span>
+                  <span className="project-tagline">{project.tagline}</span>
+                </button>
               </li>
-              <li>
-                <strong>Run tool</strong>
-              </li>
-              <li>
-                Show raw JSON responses for quick debugging
-              </li>
-            </ul>
-          </div>
+            ))}
+          </ul>
+        </section>
+      </aside>
+
+      {/* Main content */}
+      <main className="main">
+        <article className="card main-card">
+          <h2 className="card-title">{selectedProject.name}</h2>
+          <p className="card-text">{selectedProject.description}</p>
 
           <div className="placeholder-box">
-            <p className="placeholder-title">API tester UI (future)</p>
-            <p className="placeholder-text">
-              When the backend is ready, this box can turn into:
-            </p>
+            <p className="placeholder-title">Planned features for this view</p>
             <ul className="placeholder-list">
-              <li>Method selector (GET / POST / ...)</li>
-              <li>Endpoint input</li>
-              <li>Request body editor (JSON)</li>
-              <li>Pretty-printed response output</li>
+              {selectedProject.planned.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </div>
+
+          <div className="card-text main-footer">
+            <p>
+              Once your backend is ready, this panel can query real endpoints
+              and render live data here instead of static text.
+            </p>
+            <p>
+              For now, it simply reflects your selection from{" "}
+              <strong>&quot;Choose what to display&quot;</strong> in the
+              sidebar.
+            </p>
+          </div>
         </article>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
 
