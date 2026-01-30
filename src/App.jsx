@@ -1,7 +1,7 @@
 // src/App.jsx
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
+import LifeSetup from "./features/life/LifeSetup";
 
 const PROJECTS = [
   {
@@ -41,12 +41,45 @@ const PROJECTS = [
       "Setup instructions & environment info",
     ],
   },
+  {
+    id: "life",
+    name: "Game of Life",
+    tagline: "Board setup & pattern editor",
+    description:
+      "Create the initial board state for Conway’s Game of Life using a fast grid editor.",
+    planned: [
+      "Toggle cells and place famous formations",
+      "Resize the board while stopped",
+      "Export alive cell coordinates for server-side compute",
+    ],
+  },
 ];
+
+// Add these themes at the top (expanded)
+const THEMES = [
+  { id: "dev-dark", label: "Dev Dark" },
+  { id: "modern-light", label: "Modern Light" },
+  { id: "pro-slate", label: "Pro Slate" },
+  { id: "terminal-green", label: "Terminal Green" },
+  { id: "midnight-purple", label: "Midnight Purple" },
+  { id: "sunset-orange", label: "Sunset Orange" },
+  { id: "aqua-glass", label: "Aqua Glass" },
+  { id: "contrast-high", label: "High Contrast" },
+  { id: "minimal-gray", label: "Minimal Gray" }
+];
+
 
 function App() {
   const [selectedProjectId, setSelectedProjectId] = useState(PROJECTS[0].id);
+  const [themeId, setThemeId] = useState("dev-dark");
+
   const selectedProject =
     PROJECTS.find((p) => p.id === selectedProjectId) ?? PROJECTS[0];
+
+  // Apply theme to <html> (or could be body)
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", themeId);
+  }, [themeId]);
 
   return (
     <div className="app-root">
@@ -67,6 +100,24 @@ function App() {
             View repository
           </a>
         </header>
+
+        {/* Theme switcher */}
+        <section className="sidebar-section">
+          <h2 className="sidebar-section-title">Theme</h2>
+          <p className="sidebar-section-text">Choose a visual style.</p>
+            <select
+            className="theme-dropdown"
+            value={themeId}
+            onChange={(e) => setThemeId(e.target.value)}
+          >
+            {THEMES.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.label}
+              </option>
+            ))}
+          </select>
+        </section>
+
 
         <section className="sidebar-section">
           <h2 className="sidebar-section-title">Welcome</h2>
@@ -115,31 +166,35 @@ function App() {
 
       {/* Main content */}
       <main className="main">
-        <article className="card main-card">
-          <h2 className="card-title">{selectedProject.name}</h2>
-          <p className="card-text">{selectedProject.description}</p>
+        {selectedProjectId === "life" ? (
+          <LifeSetup />
+        ) : (
+          <article className="card main-card">
+            <h2 className="card-title">{selectedProject.name}</h2>
+            <p className="card-text">{selectedProject.description}</p>
 
-          <div className="placeholder-box">
-            <p className="placeholder-title">Planned features for this view</p>
-            <ul className="placeholder-list">
-              {selectedProject.planned.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
+            <div className="placeholder-box">
+              <p className="placeholder-title">Planned features for this view</p>
+              <ul className="placeholder-list">
+                {selectedProject.planned.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
 
-          <div className="card-text main-footer">
-            <p>
-              Once your backend is ready, this panel can query real endpoints
-              and render live data here instead of static text.
-            </p>
-            <p>
-              For now, it simply reflects your selection from{" "}
-              <strong>&quot;Choose what to display&quot;</strong> in the
-              sidebar.
-            </p>
-          </div>
-        </article>
+            <div className="card-text main-footer">
+              <p>
+                Once your backend is ready, this panel can query real endpoints
+                and render live data here instead of static text.
+              </p>
+              <p>
+                For now, it simply reflects your selection from{" "}
+                <strong>&quot;Choose what to display&quot;</strong> in the
+                sidebar.
+              </p>
+            </div>
+          </article>
+        )}
       </main>
     </div>
   );
