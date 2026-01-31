@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { applyPatternAt, getPatternOptions } from "./patterns";
 
-const DEFAULT_ROWS = 100;
-const DEFAULT_COLS = 100;
+const DEFAULT_ROWS = 37;
+const DEFAULT_COLS = 94;
 const MIN_SIZE = 10;
 const MAX_SIZE = 200;
 const CELL_SIZE = 10;
@@ -87,6 +87,7 @@ function LifeSetup() {
   const [tool, setTool] = useState(TOOL_OPTIONS[0].id);
   const [patternId, setPatternId] = useState("glider");
   const [paintMode, setPaintMode] = useState("alive");
+  const [patternRotation, setPatternRotation] = useState(0);
   const [stepsPerSecond, setStepsPerSecond] = useState(DEFAULT_STEPS_PER_SECOND);
   const [generation, setGeneration] = useState(0);
   const isDraggingRef = useRef(false);
@@ -205,7 +206,8 @@ function LifeSetup() {
         patternId,
         origin: { r: row, c: col },
         rows,
-        cols
+        cols,
+        rotation: patternRotation
       });
       const keys = placements.map((cell) => buildKey(cell.r, cell.c));
       setAlive((prev) => {
@@ -405,6 +407,22 @@ function LifeSetup() {
                 {pattern.name}
               </option>
             ))}
+          </select>
+        </div>
+        <div className="life-control-group">
+          <label className="life-label" htmlFor="life-rotation">
+            Rotation
+          </label>
+          <select
+            id="life-rotation"
+            value={patternRotation}
+            disabled={isRunning || tool !== "pattern"}
+            onChange={(event) => setPatternRotation(Number(event.target.value))}
+          >
+            <option value={0}>0°</option>
+            <option value={90}>90°</option>
+            <option value={180}>180°</option>
+            <option value={270}>270°</option>
           </select>
         </div>
         <div className="life-control-group">
