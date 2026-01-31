@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { applyPatternAt, getPatternOptions } from "./patterns";
 
 const DEFAULT_ROWS = 100;
@@ -6,6 +6,9 @@ const DEFAULT_COLS = 100;
 const MIN_SIZE = 10;
 const MAX_SIZE = 200;
 const CELL_SIZE = 10;
+const DEFAULT_STEPS_PER_SECOND = 10;
+const MIN_STEPS_PER_SECOND = 1;
+const MAX_STEPS_PER_SECOND = 60;
 
 const TOOL_OPTIONS = [
   { id: "draw", label: "Draw" },
@@ -17,6 +20,44 @@ const buildKey = (r, c) => `${r},${c}`;
 const parseKey = (key) => key.split(",").map(Number);
 
 const buildEmptySet = () => new Set();
+
+const getNeighborKeys = (row, col, rows, cols) => {
+  const keys = [];
+  for (let dr = -1; dr <= 1; dr += 1) {
+    for (let dc = -1; dc <= 1; dc += 1) {
+      if (dr === 0 && dc === 0) {
+        continue;
+      }
+      const nextRow = row + dr;
+      const nextCol = col + dc;
+      if (nextRow < 0 || nextRow >= rows || nextCol < 0 || nextCol >= cols) {
+        continue;
+      }
+      keys.push(buildKey(nextRow, nextCol));
+    }
+  }
+  return keys;
+};
+
+const computeNextAlive = (aliveSet, rows, cols) => {
+  const neighborCounts = new Map();
+
+  aliveSet.forEach((key) => {
+    const [row, col] = parseKey(key);
+    getNeighborKeys(row, col, rows, cols).forEach((neighborKey) => {
+      neighborCounts.set(neighborKey, (neighborCounts.get(neighborKey) ?? 0) + 1);
+    });
+  });
+
+  const nextAlive = new Set();
+  neighborCounts.forEach((count, key) => {
+    if (count === 3 || (count === 2 && aliveSet.has(key))) {
+      nextAlive.add(key);
+    }
+  });
+
+  return nextAlive;
+};
 
 const getRandomAlive = (rows, cols, density = 0.18) => {
   const set = new Set();
@@ -46,8 +87,15 @@ function LifeSetup() {
   const [tool, setTool] = useState(TOOL_OPTIONS[0].id);
   const [patternId, setPatternId] = useState("glider");
   const [paintMode, setPaintMode] = useState("alive");
+  const [stepsPerSecond, setStepsPerSecond] = useState(DEFAULT_STEPS_PER_SECOND);
+  const [generation, setGeneration] = useState(0);
   const isDraggingRef = useRef(false);
   const dragPaintRef = useRef("alive");
+  const aliveRef = useRef(alive);
+  const stepsPerSecondRef = useRef(stepsPerSecond);
+  const rafRef = useRef(null);
+  const lastTimestampRef = useRef(0);
+  const accumulatorRef = useRef(0);
 
   const patternOptions = useMemo(() => getPatternOptions(), []);
   const aliveCoords = useMemo(() => exportAlive(alive), [alive]);
@@ -56,6 +104,60 @@ function LifeSetup() {
     () => `repeat(${cols}, ${CELL_SIZE}px)`,
     [cols]
   );
+
+  useEffect(() => {
+    aliveRef.current = alive;
+  }, [alive]);
+
+  useEffect(() => {
+    stepsPerSecondRef.current = stepsPerSecond;
+  }, [stepsPerSecond]);
+
+  useEffect(() => {
+    if (!isRunning) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      lastTimestampRef.current = 0;
+      accumulatorRef.current = 0;
+      return;
+    }
+
+    const tick = (timestamp) => {
+      if (!lastTimestampRef.current) {
+        lastTimestampRef.current = timestamp;
+      }
+
+      const delta = timestamp - lastTimestampRef.current;
+      lastTimestampRef.current = timestamp;
+      accumulatorRef.current += delta;
+
+      const interval = 1000 / stepsPerSecondRef.current;
+      let steps = 0;
+
+      while (accumulatorRef.current >= interval) {
+        accumulatorRef.current -= interval;
+        aliveRef.current = computeNextAlive(aliveRef.current, rows, cols);
+        steps += 1;
+      }
+
+      if (steps > 0) {
+        setAlive(aliveRef.current);
+        setGeneration((prev) => prev + steps);
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [isRunning, rows, cols]);
 
   const applyAliveChange = (updates) => {
     setAlive((prev) => {
@@ -148,6 +250,7 @@ function LifeSetup() {
   const handleResize = (nextRows, nextCols) => {
     setRows(nextRows);
     setCols(nextCols);
+    setGeneration(0);
     setAlive((prev) => {
       const next = new Set();
       prev.forEach((key) => {
@@ -170,19 +273,37 @@ function LifeSetup() {
     handleResize(rows, value);
   };
 
-  const handleClear = () => setAlive(buildEmptySet());
+  const handleClear = () => {
+    setAlive(buildEmptySet());
+    setGeneration(0);
+  };
 
-  const handleRandom = () => setAlive(getRandomAlive(rows, cols));
+  const handleRandom = () => {
+    setAlive(getRandomAlive(rows, cols));
+    setGeneration(0);
+  };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(aliveCoords, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(exportPayload, null, 2));
     } catch (error) {
       console.error("Clipboard copy failed", error);
     }
   };
 
   const playStatus = isRunning ? "Running" : "Stopped";
+  const gridSummary = `${rows} × ${cols}`;
+  const totalCells = rows * cols;
+  const exportPayload = useMemo(
+    () => ({
+      rows,
+      cols,
+      stepsPerSecond,
+      generation,
+      alive: aliveCoords
+    }),
+    [rows, cols, stepsPerSecond, generation, aliveCoords]
+  );
 
   return (
     <article className="card life-card">
@@ -190,8 +311,8 @@ function LifeSetup() {
         <div>
           <h2 className="card-title">Game of Life Setup</h2>
           <p className="card-text">
-            Build the initial state and export alive coordinates for the server-side
-            simulation.
+            Build the initial state and run a client-side simulation with adjustable
+            speed.
           </p>
         </div>
         <div className="life-status">
@@ -207,6 +328,21 @@ function LifeSetup() {
           </button>
         </div>
       </header>
+
+      <section className="life-meta">
+        <div className="life-meta-item">
+          <span className="life-meta-label">Grid size</span>
+          <span className="life-meta-value">{gridSummary}</span>
+        </div>
+        <div className="life-meta-item">
+          <span className="life-meta-label">Total cells</span>
+          <span className="life-meta-value">{totalCells.toLocaleString()}</span>
+        </div>
+        <div className="life-meta-item">
+          <span className="life-meta-label">Generation</span>
+          <span className="life-meta-value">{generation}</span>
+        </div>
+      </section>
 
       <section className="life-controls">
         <div className="life-control-group">
@@ -304,13 +440,34 @@ function LifeSetup() {
             Random
           </button>
         </div>
+        <div className="life-control-group">
+          <label className="life-label" htmlFor="life-fps">
+            Steps/sec
+          </label>
+          <input
+            id="life-fps"
+            type="number"
+            min={MIN_STEPS_PER_SECOND}
+            max={MAX_STEPS_PER_SECOND}
+            value={stepsPerSecond}
+            onChange={(event) =>
+              setStepsPerSecond(
+                clamp(
+                  Number(event.target.value || DEFAULT_STEPS_PER_SECOND),
+                  MIN_STEPS_PER_SECOND,
+                  MAX_STEPS_PER_SECOND
+                )
+              )
+            }
+          />
+        </div>
       </section>
 
       <section className="life-grid-wrapper">
         <div className="life-grid-tools">
           <p className="life-grid-hint">
             {isRunning
-              ? "Simulation paused on server - editor locked."
+              ? "Simulation running locally. Pause to edit cells."
               : "Left click paints, right click erases. Drag to paint."}
           </p>
         </div>
@@ -345,8 +502,7 @@ function LifeSetup() {
         <div>
           <h3 className="life-export-title">Alive cells export</h3>
           <p className="card-text">
-            Server payload (list of coordinates). Copy this JSON into your backend
-            to drive the simulation.
+            Export includes grid size, speed, generation, and alive coordinates.
           </p>
         </div>
         <button type="button" className="life-button" onClick={handleCopy}>
@@ -354,7 +510,7 @@ function LifeSetup() {
         </button>
       </section>
       <pre className="life-export-json">
-        {JSON.stringify(aliveCoords, null, 2)}
+        {JSON.stringify(exportPayload, null, 2)}
       </pre>
     </article>
   );
