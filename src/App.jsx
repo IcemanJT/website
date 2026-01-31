@@ -57,21 +57,18 @@ const PROJECTS = [
 
 // Add these themes at the top (expanded)
 const THEMES = [
-  { id: "dev-dark", label: "Dev Dark" },
-  { id: "modern-light", label: "Modern Light" },
   { id: "pro-slate", label: "Pro Slate" },
+  { id: "modern-light", label: "Modern Light" },
   { id: "terminal-green", label: "Terminal Green" },
   { id: "midnight-purple", label: "Midnight Purple" },
   { id: "sunset-orange", label: "Sunset Orange" },
-  { id: "aqua-glass", label: "Aqua Glass" },
-  { id: "contrast-high", label: "High Contrast" },
-  { id: "minimal-gray", label: "Minimal Gray" }
+  { id: "aqua-glass", label: "Aqua Glass" }
 ];
 
 
 function App() {
   const [selectedProjectId, setSelectedProjectId] = useState(PROJECTS[0].id);
-  const [themeId, setThemeId] = useState("dev-dark");
+  const [themeId, setThemeId] = useState("pro-slate");
 
   const selectedProject =
     PROJECTS.find((p) => p.id === selectedProjectId) ?? PROJECTS[0];
