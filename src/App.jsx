@@ -69,6 +69,7 @@ const THEMES = [
 function App() {
   const [selectedProjectId, setSelectedProjectId] = useState(PROJECTS[0].id);
   const [themeId, setThemeId] = useState("pro-slate");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const selectedProject =
     PROJECTS.find((p) => p.id === selectedProjectId) ?? PROJECTS[0];
@@ -81,84 +82,94 @@ function App() {
   return (
     <div className="app-root">
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
         <header className="sidebar-header">
           <div>
             <h1 className="sidebar-title">Github Website Sandbox</h1>
             <p className="sidebar-subtitle"></p>
           </div>
 
-          <a
-            href="https://github.com/IcemanJT/website"
-            target="_blank"
-            rel="noreferrer"
-            className="sidebar-link"
-          >
-            View repository
-          </a>
+          <div className="sidebar-header-actions">
+            <a
+              href="https://github.com/IcemanJT/website"
+              target="_blank"
+              rel="noreferrer"
+              className="sidebar-link"
+            >
+              View repository
+            </a>
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={() => setSidebarOpen((open) => !open)}
+            >
+              {sidebarOpen ? "Close" : "Menu"}
+            </button>
+          </div>
         </header>
 
-        {/* Theme switcher */}
-        <section className="sidebar-section">
-          <h2 className="sidebar-section-title">Theme</h2>
-          <p className="sidebar-section-text">Choose a visual style.</p>
+        <div className="sidebar-content">
+          {/* Theme switcher */}
+          <section className="sidebar-section">
+            <h2 className="sidebar-section-title">Theme</h2>
+            <p className="sidebar-section-text">Choose a visual style.</p>
             <select
-            className="theme-dropdown"
-            value={themeId}
-            onChange={(e) => setThemeId(e.target.value)}
-          >
-            {THEMES.map((theme) => (
-              <option key={theme.id} value={theme.id}>
-                {theme.label}
-              </option>
-            ))}
-          </select>
-        </section>
+              className="theme-dropdown"
+              value={themeId}
+              onChange={(e) => setThemeId(e.target.value)}
+            >
+              {THEMES.map((theme) => (
+                <option key={theme.id} value={theme.id}>
+                  {theme.label}
+                </option>
+              ))}
+            </select>
+          </section>
 
+          <section className="sidebar-section">
+            <h2 className="sidebar-section-title">Welcome</h2>
 
-        <section className="sidebar-section">
-          <h2 className="sidebar-section-title">Welcome</h2>
+            <h3 className="sidebar-section-subtitle">What you get now</h3>
+            <ul className="sidebar-list">
+              <li>Clean UI, no fake network calls</li>
+              <li>Clear placeholders for future endpoints</li>
+              <li>Simple structure that is easy to extend</li>
+            </ul>
 
-          <h3 className="sidebar-section-subtitle">What you get now</h3>
-          <ul className="sidebar-list">
-            <li>Clean UI, no fake network calls</li>
-            <li>Clear placeholders for future endpoints</li>
-            <li>Simple structure that is easy to extend</li>
-          </ul>
+            <h3 className="sidebar-section-subtitle">What&apos;s next</h3>
+            <ul className="sidebar-list">
+              <li>Turn this into a public API playground</li>
+            </ul>
+          </section>
 
-          <h3 className="sidebar-section-subtitle">What&apos;s next</h3>
-          <ul className="sidebar-list">
-            <li>Turn this into a public API playground</li>
-          </ul>
-        </section>
+          <section className="sidebar-section">
+            <h2 className="sidebar-section-title">Choose what to display</h2>
+            <p className="sidebar-section-text">
+              Pick a project area below. The main panel on the right will update
+              based on your selection. For now this is all placeholder content.
+            </p>
 
-        <section className="sidebar-section">
-          <h2 className="sidebar-section-title">Choose what to display</h2>
-          <p className="sidebar-section-text">
-            Pick a project area below. The main panel on the right will update
-            based on your selection. For now this is all placeholder content.
-          </p>
-
-          <ul className="project-list">
-            {PROJECTS.map((project) => (
-              <li key={project.id}>
-                <button
-                  type="button"
-                  className={
-                    "project-item" +
-                    (project.id === selectedProjectId
-                      ? " project-item-active"
-                      : "")
-                  }
-                  onClick={() => setSelectedProjectId(project.id)}
-                >
-                  <span className="project-name">{project.name}</span>
-                  <span className="project-tagline">{project.tagline}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
+            <ul className="project-list">
+              {PROJECTS.map((project) => (
+                <li key={project.id}>
+                  <button
+                    type="button"
+                    className={
+                      "project-item" +
+                      (project.id === selectedProjectId
+                        ? " project-item-active"
+                        : "")
+                    }
+                    onClick={() => setSelectedProjectId(project.id)}
+                  >
+                    <span className="project-name">{project.name}</span>
+                    <span className="project-tagline">{project.tagline}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </aside>
 
       {/* Main content */}

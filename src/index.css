@@ -325,6 +325,9 @@ body {
   gap: 1.5rem;
   color: var(--text);
   border-right: 1px solid var(--sidebar-border);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -332,6 +335,41 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
+}
+
+.sidebar-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.sidebar-toggle {
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--sidebar-border);
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8rem;
+  background: var(--sidebar-surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s,
+    transform 0.05s;
+}
+
+.sidebar-toggle:hover {
+  background: var(--sidebar-surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-0.5px);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  scrollbar-gutter: stable;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .sidebar-title {
@@ -783,6 +821,25 @@ body {
     border-right: none;
     border-bottom: 1px solid rgba(31, 41, 55, 0.7);
     box-shadow: none;
+    height: auto;
+    padding-bottom: 1rem;
+  }
+
+  .sidebar-content {
+    max-height: 0;
+    padding-right: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+  }
+
+  .sidebar-open .sidebar-content {
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 0.35rem;
+  }
+
+  .sidebar-toggle {
+    align-self: flex-start;
   }
 
   .main {
