@@ -90,6 +90,7 @@ function LifeSetup() {
   const [patternRotation, setPatternRotation] = useState(0);
   const [stepsPerSecond, setStepsPerSecond] = useState(DEFAULT_STEPS_PER_SECOND);
   const [generation, setGeneration] = useState(0);
+  const [hoveredCell, setHoveredCell] = useState(null);
   const isDraggingRef = useRef(false);
   const dragPaintRef = useRef("alive");
   const aliveRef = useRef(alive);
@@ -100,6 +101,61 @@ function LifeSetup() {
 
   const patternOptions = useMemo(() => getPatternOptions(), []);
   const aliveCoords = useMemo(() => exportAlive(alive), [alive]);
+
+  const previewSets = useMemo(() => {
+    const footprint = new Set();
+    const add = new Set();
+    const remove = new Set();
+
+    if (!hoveredCell || isRunning) {
+      return { footprint, add, remove };
+    }
+
+    if (tool === "pattern") {
+      const placements = applyPatternAt({
+        patternId,
+        origin: { r: hoveredCell.r, c: hoveredCell.c },
+        rows,
+        cols,
+        rotation: patternRotation
+      });
+
+      placements.forEach((cell) => {
+        const key = buildKey(cell.r, cell.c);
+        footprint.add(key);
+        if (!alive.has(key)) {
+          add.add(key);
+        }
+      });
+      return { footprint, add, remove };
+    }
+
+    if (!isDraggingRef.current && tool === "draw") {
+      const key = buildKey(hoveredCell.r, hoveredCell.c);
+      const isAlive = alive.has(key);
+
+      if (paintMode === "toggle") {
+        if (isAlive) {
+          remove.add(key);
+        } else {
+          add.add(key);
+        }
+        return { footprint, add, remove };
+      }
+
+      if (paintMode === "alive") {
+        if (!isAlive) {
+          add.add(key);
+        }
+      } else if (paintMode === "dead") {
+        if (isAlive) {
+          remove.add(key);
+        }
+      }
+    }
+
+    return { footprint, add, remove };
+  }, [alive, hoveredCell, isRunning, paintMode, patternId, patternRotation, rows, cols, tool]);
 
   const gridTemplateColumns = useMemo(
     () => `repeat(${cols}, ${CELL_SIZE}px)`,
@@ -239,6 +295,10 @@ function LifeSetup() {
   };
 
   const handleMouseEnter = (row, col) => {
+    if (!isRunning) {
+      setHoveredCell({ r: row, c: col });
+    }
+
     if (!isDraggingRef.current || tool === "pattern") {
       return;
     }
@@ -247,6 +307,11 @@ function LifeSetup() {
 
   const stopDragging = () => {
     isDraggingRef.current = false;
+  };
+
+  const handleMouseLeave = () => {
+    stopDragging();
+    setHoveredCell(null);
   };
 
   const handleResize = (nextRows, nextCols) => {
@@ -492,7 +557,7 @@ function LifeSetup() {
         <div
           className={"life-grid" + (isRunning ? " life-grid-locked" : "")}
           style={{ gridTemplateColumns }}
-          onMouseLeave={stopDragging}
+          onMouseLeave={handleMouseLeave}
           onMouseUp={stopDragging}
           onContextMenu={(event) => event.preventDefault()}
         >
@@ -501,12 +566,21 @@ function LifeSetup() {
             const col = index % cols;
             const key = buildKey(row, col);
             const isAlive = alive.has(key);
+            const isPreviewAdd = previewSets.add.has(key);
+            const isPreviewRemove = previewSets.remove.has(key);
+            const isPreviewFootprint = previewSets.footprint.has(key);
             return (
               <button
                 key={key}
                 type="button"
                 aria-label={`cell-${row}-${col}`}
-                className={"life-cell" + (isAlive ? " life-cell-alive" : "")}
+                className={
+                  "life-cell" +
+                  (isAlive ? " life-cell-alive" : "") +
+                  (isPreviewFootprint ? " life-cell-preview-footprint" : "") +
+                  (isPreviewAdd ? " life-cell-preview-add" : "") +
+                  (isPreviewRemove ? " life-cell-preview-remove" : "")
+                }
                 onMouseDown={(event) => handleMouseDown(row, col, event)}
                 onMouseEnter={() => handleMouseEnter(row, col)}
                 disabled={isRunning}

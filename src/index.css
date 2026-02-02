@@ -797,10 +797,23 @@ body {
   border: none;
   padding: 0;
   cursor: pointer;
+  position: relative;
 }
 
 .life-cell-alive {
   background: var(--accent);
+}
+
+.life-cell-preview-footprint {
+  box-shadow: inset 0 0 0 1px rgba(248, 250, 252, 0.35);
+}
+
+.life-cell-preview-add {
+  background: rgba(34, 197, 94, 0.7);
+}
+
+.life-cell-preview-remove {
+  background: rgba(248, 113, 113, 0.7);
 }
 
 .life-cell:disabled {
